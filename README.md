@@ -16,7 +16,7 @@
 - 大模型集成：DeepSeek（意图识别、Cypher 生成、回答生成）
 - 向量检索：HuggingFace Embeddings（BAAI/bge-small-zh-v1.5，实体对齐）
 - LangChain 组件：LangChain-Core、LangChain-Neo4j、LangChain-DeepSeek（流程编排）
-- 
+
 ## 环境准备
 ### 1. 依赖安装
 在项目根目录执行以下命令（推荐使用虚拟环境如 venv 或 conda）：
