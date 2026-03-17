@@ -135,4 +135,17 @@ docker ps
 docker logs -f obs_meeting_qa #实时跟踪查看名为 obs_meeting_qa 的Docker容器的日志输出
 docker exec -it obs_meeting_qa bash  #exec:表示已运行的容器中执行命令   obs_meeting_qa目标容器的名称   bash要在容器内执行的命令:启动bash终端
 ```
+## 8.服务器 / 远程机器上安装并启动 JupyterLab 服务
+```bash
+pip install jupyterlab
+```
+```bash
+jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+```
+🥳启动一个可被外部访问的 JupyterLab 服务，运行在 8888 端口，不自动弹浏览器，允许 root 运行
+- jupyter lab：启动 JupyterLab 服务
+- --ip=0.0.0.0：允许所有 IP 地址访问（也就是可以从局域网其他机器、或者公网访问这个服务，而不是只能本机访问）
+- --port=8888：指定服务运行在 8888 端口（浏览器访问时要加 :8888）
+- --no-browser：启动后不自动打开浏览器（适合在服务器 / 远程环境运行，手动在浏览器打开）
+- --allow-root：允许 root 用户 启动服务（Linux / 服务器环境下，root 权限运行时需要加这个参数，否则会报错）
 
