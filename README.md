@@ -143,7 +143,8 @@ pip install jupyterlab
 jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 ```
 ```bash
-jupyter server list
+jupyter server list     # 它会列出当前正在运行的服务以及完整的带Token的URL
+jupyter server password    # 强制设置新密码
 ```
 🥳启动一个可被外部访问的 JupyterLab 服务，运行在 8888 端口，不自动弹浏览器，允许 root 运行
 - jupyter lab：启动 JupyterLab 服务
