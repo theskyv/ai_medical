@@ -142,6 +142,9 @@ pip install jupyterlab
 ```bash
 jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 ```
+```bash
+jupyter server list
+```
 🥳启动一个可被外部访问的 JupyterLab 服务，运行在 8888 端口，不自动弹浏览器，允许 root 运行
 - jupyter lab：启动 JupyterLab 服务
 - --ip=0.0.0.0：允许所有 IP 地址访问（也就是可以从局域网其他机器、或者公网访问这个服务，而不是只能本机访问）
