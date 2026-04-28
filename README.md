@@ -160,8 +160,11 @@ jupyter server password    # 强制设置新密码
 # 第一步：ping 测试主机连通性
 ping 10.189.1.127
 
+# 第二步：测试 18008 端口（推荐用 nc，比 telnet 更清晰）
+telnet 10.189.1.127 18008
+nc -zv 10.189.1.127 18008
+```
 ------
-
 ⭐linux创建虚拟环境
 ```bash
 python -m venv venv
@@ -177,11 +180,4 @@ deactivate #退出(venv) 虚拟环境
 ```bash
 curl cip.cc  
 ```
-
-
-# 第二步：测试 18008 端口（推荐用 nc，比 telnet 更清晰）
-telnet 10.189.1.127 18008
-nc -zv 10.189.1.127 18008
-```
-
 
