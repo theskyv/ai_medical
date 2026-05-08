@@ -128,10 +128,11 @@ sudo docker logs -f ee7672b6578f
 ```
 (注：ee76... 是你sudo docker ps的 CONTAINER ID)
 
-## 7.容器操作命令
+## 7.容器操作命令🦜
 ```bash
 sudo -i #切换到root超级用户的交互式登录环境 -i(--login)
 docker ps
+docker ps -a
 docker container ls -a  #⭐ docker：调用 Docker 工具  container：操作容器  ls：list = 列出  -a：all = 显示所有容器（包括已停止的）
 docker logs -f obs_meeting_qa #实时跟踪查看名为 obs_meeting_qa 的Docker容器的日志输出
 docker exec -it obs_meeting_qa bash  #exec:表示已运行的容器中执行命令   obs_meeting_qa目标容器的名称   bash要在容器内执行的命令:启动bash终端
