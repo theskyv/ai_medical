@@ -132,7 +132,7 @@ async def embed_texts(
         return_dense=return_dense,
         return_sparse=return_sparse,
         return_colbert_vecs=False,
-        batch_size=1
+        batch_size=4
     )
     res_list = []
     dense_list = encode_res.get("dense_vecs", [])
@@ -153,20 +153,18 @@ if __name__ == "__main__":
 ```
 🪁2.Dockerfile 构建镜像文件
 ```bash
-FROM nvidia/cuda:12.1-runtime-ubuntu22.04
-
-# 🔥 换成阿里云 Ubuntu 源（加速 apt 安装）
-RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+# 换成国内拉取无压力的 Python 镜像
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# 安装python基础环境
-RUN apt-get update && apt-get install -y python3 python3-pip && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    ln -s /usr/bin/pip3 /usr/bin/pip
+# 换成阿里云 Ubuntu 源（加速 apt 安装）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 
-# 换国内源加速安装依赖
+# 安装基础依赖
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+
+# 清华 PyPI 源安装依赖（超快）
 RUN pip install --no-cache-dir \
     torch==2.3.1 \
     fastapi==0.104.1 \
@@ -185,7 +183,6 @@ CMD ["python", "main.py"]
 ```
 🐦‍🔥3.docker-compose.yml 编排文件（指定 GPU 卡号）
 ```bash
-version: "3.8"
 services:
   bge-m3-service:
     build: .
