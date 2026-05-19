@@ -217,6 +217,8 @@ cd bge-m3-fastapi
 
 # 构建镜像+后台启动
 docker-compose up -d --build
+# 或者改成新命令（不带横杠，大部分新版 Docker 都自带）
+docker compose up -d --build
 
 # 查看运行日志
 docker-compose logs -f
