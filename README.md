@@ -92,3 +92,148 @@ python main.py app
 密钥安全：推荐用 .env 文件管理敏感信息（配合 python-dotenv），避免硬编码，.env 文件需添加到 .gitignore。 \
 性能优化：图谱数据量大时，可调整索引配置、开启 Neo4j 缓存提升查询速度。 \
 成本控制：DeepSeek API 调用有费用，测试阶段可限制调用频率或替换为本地开源大模型（如 Llama 3）。 
+
+
+### fastapi && docker部署
+目录结构
+```bash
+bge-m3-fastapi/
+├── main.py
+├── Dockerfile
+└── docker-compose.yml
+```
+🐣1.main.py
+```bash
+import os
+from fastapi import FastAPI, Body
+from FlagEmbedding import BGEM3FlagModel
+
+# 锁定使用显卡2，和docker配置保持一致
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
+app = FastAPI(title="BGE-M3 稠密+稀疏向量服务")
+
+# 加载模型，低显存优化
+model = BGEM3FlagModel(
+    model_name_or_path="BAAI/bge-m3",
+    use_fp16=True,
+    device="cuda"
+)
+
+@app.post("/api/embed")
+async def embed_texts(
+    texts: list[str] = Body(..., description="输入文本列表"),
+    return_dense: bool = True,
+    return_sparse: bool = True
+):
+    # 显存紧张batch设1最稳
+    encode_res = model.encode(
+        texts,
+        return_dense=return_dense,
+        return_sparse=return_sparse,
+        return_colbert_vecs=False,
+        batch_size=1
+    )
+    res_list = []
+    dense_list = encode_res.get("dense_vecs", [])
+    sparse_list = encode_res.get("lexical_weights", [])
+
+    for idx in range(len(texts)):
+        item = {}
+        if return_dense and idx < len(dense_list):
+            item["dense"] = dense_list[idx].tolist()
+        if return_sparse and idx < len(sparse_list):
+            item["sparse"] = sparse_list[idx]
+        res_list.append(item)
+    return {"code": 200, "msg": "success", "data": res_list}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+🪁2.Dockerfile 构建镜像文件
+```bash
+FROM nvidia/cuda:12.1-runtime-ubuntu22.04
+
+# 🔥 换成阿里云 Ubuntu 源（加速 apt 安装）
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+RUN sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+WORKDIR /app
+
+# 安装python基础环境
+RUN apt-get update && apt-get install -y python3 python3-pip && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s /usr/bin/pip3 /usr/bin/pip
+
+# 换国内源加速安装依赖
+RUN pip install --no-cache-dir \
+    torch==2.3.1 \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    FlagEmbedding==1.3.2 \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 拷贝代码
+COPY main.py .
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["python", "main.py"]
+```
+🐦‍🔥3.docker-compose.yml 编排文件（指定 GPU 卡号）
+```bash
+version: "3.8"
+services:
+  bge-m3-service:
+    build: .
+    container_name: bge-m3-fastapi-service
+    ports:
+      - "8004:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["2"]  # 改成你要用的显卡编号 0/1/2/3
+              capabilities: [gpu]
+    volumes:
+      # 挂载本地预下载好的模型，避免容器内重新下载
+      - /data/models/modelscope/models/bge-m3:/root/.cache/huggingface/hub/models--BAAI--bge-m3
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+```
+**前置准备**  \
+提前用modelscope下载好模型到路径：/data/models/modelscope/models/bge-m3 \
+确认服务器2 号显卡空闲显存≥3.5G，原有业务服务不停止  \
+
+**一键部署启动**
+```bash
+# 进入项目文件夹
+cd bge-m3-fastapi
+
+# 构建镜像+后台启动
+docker-compose up -d --build
+
+# 查看运行日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+**接口测试**
+```bash
+curl -X POST http://你的服务器IP:8004/api/embed \
+-H "Content-Type: application/json" \
+-d '{"texts":["测试文档内容","BGE-M3向量模型"]}'
+```
+返回内容同时包含稠密向量 dense + 稀疏权重 sparse，直接可存入 Milvus 混合索引。 \
+**切换显卡修改位置** \
+- main.py 里：os.environ["CUDA_VISIBLE_DEVICES"] = "2" \
+- docker-compose.yml 里：device_ids: ["2"] \
+- 两处数字保持一致即可。 
+
+
