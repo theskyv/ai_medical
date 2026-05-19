@@ -93,8 +93,8 @@ python main.py app
 性能优化：图谱数据量大时，可调整索引配置、开启 Neo4j 缓存提升查询速度。 \
 成本控制：DeepSeek API 调用有费用，测试阶段可限制调用频率或替换为本地开源大模型（如 Llama 3）。 
 
-
-### fastapi && docker部署
+-------
+### fastapi && docker部署（封装bge-m3服务）
 目录结构
 ```bash
 bge-m3-fastapi/
