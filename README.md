@@ -115,7 +115,7 @@ app = FastAPI(title="BGE-M3 稠密+稀疏向量服务")
 
 # 加载模型，低显存优化
 model = BGEM3FlagModel(
-    model_name_or_path="BAAI/bge-m3",
+    model_name_or_path="/root/.cache/huggingface/hub/models--BAAI--bge-m3",
     use_fp16=True,
     device="cuda"
 )
@@ -191,7 +191,7 @@ services:
     build: .
     container_name: bge-m3-fastapi-service
     ports:
-      - "8004:8000"
+      - "8003:8000"
     deploy:
       resources:
         reservations:
