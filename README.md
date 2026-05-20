@@ -227,7 +227,9 @@ docker-compose down
 ```bash
 curl -X POST http://你的服务器IP:8004/api/embed \
 -H "Content-Type: application/json" \
--d '{"texts":["测试文档内容","BGE-M3向量模型"]}'
+-d '["测试文档内容","BGE-M3向量模型"]'
+
+curl -X POST "http://10.8.81.1:8003/api/embed" -H "Content-Type: application/json" -d "[\"小明做什么工作？\"]"
 ```
 返回内容同时包含稠密向量 dense + 稀疏权重 sparse，直接可存入 Milvus 混合索引。 \
 **切换显卡修改位置** \
