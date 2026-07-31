@@ -195,5 +195,47 @@ df -h
 
 # 全局查找文件名（全盘搜索）
 find / -name "你要找的文件名"
+```
 
+## 9.windows docker desktop换成国内镜像源并安装neo4j
+
+将 Docker Desktop 中的 registry-mirrors 替换为目前国内最新且有效的加速源即可 
+
+第一步：修改 Docker Desktop 配置 
+- 打开 Docker Desktop。 
+- 点击右上角的 齿轮图标（Settings）。 
+- 选择左侧菜单中的 Docker Engine。 
+- 将里面的配置内容修改/替换为以下代码： 
+```bash
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me",
+    "https://docker.m.daocloud.io"
+  ]
+}
+```
+第二步：重新执行命令 \
+重启完成后，在 PowerShell 中再次运行你的 Neo4j 启动命令即可自动从新的镜像源拉取：
+```bash
+docker run --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
+```
+💡 备用方案（如果全局镜像源仍然卡顿）\
+如果因为网络抖动配置全局镜像源后仍然很慢，你可以直接在拉取命令前加上镜像加速站域名： 
+```bash
+docker pull docker.1ms.run/library/neo4j:5.24
+```
+拉取完成后，将其重新打标签（Tag）并直接启动：
+```bash
+docker tag docker.1ms.run/library/neo4j:5.24 neo4j:5.24
+
+docker run --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
+```
 
