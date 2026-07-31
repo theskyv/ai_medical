@@ -225,7 +225,7 @@ find / -name "你要找的文件名"
 第二步：重新执行命令 \
 重启完成后，在 PowerShell 中再次运行你的 Neo4j 启动命令即可自动从新的镜像源拉取：
 ```bash
-docker run --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
+docker run --name myneo4j(自定义容器名称)  --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
 ```
 💡 备用方案（如果全局镜像源仍然卡顿）\
 如果因为网络抖动配置全局镜像源后仍然很慢，你可以直接在拉取命令前加上镜像加速站域名： 
@@ -236,6 +236,6 @@ docker pull docker.1ms.run/library/neo4j:5.24
 ```bash
 docker tag docker.1ms.run/library/neo4j:5.24 neo4j:5.24
 
-docker run --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
+docker run --name myneo4j(自定义容器名称) --restart always --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/12345678 neo4j:5.24
 ```
 
