@@ -92,7 +92,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 
 # 清华 PyPI 源安装依赖（超快）
 RUN pip install --no-cache-dir \
-    torch==2.3.1 \
+    torch==2.3.1 \ #🫡 默认cpu版本
     fastapi==0.104.1 \
     uvicorn==0.24.0 \
     FlagEmbedding==1.3.2 \
@@ -107,6 +107,50 @@ EXPOSE 8000
 # 启动命令
 CMD ["python", "main.py"]
 ```
+**推荐使用 NVIDIA 官方的 PyTorch/CUDA 基础镜像，并配置国内 Pip/APT 源：**
+```bash
+# 1. 使用 NVIDIA 官方包含 CUDA 12.1 + Python 3.10 的基础镜像
+FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+
+WORKDIR /app
+
+# 2. 替换为阿里云 Ubuntu 22.04 源（加速 apt 安装）
+RUN sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+# 3. 安装 Python 3.10、pip 及基础构建工具
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.10 \
+    python3-pip \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# 建立 python 指向 python3.10 的软链接
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+
+# 4. 先安装 GPU 版 PyTorch（显式指定 PyTorch CUDA 12.1 源）
+# 如果国内直接拉 PyTorch 官方源慢，可以使用中科院/南京大学等 PyTorch 镜像源
+RUN pip install --no-cache-dir \
+    torch==2.3.1+cu121 \
+    --extra-index-url https://download.pytorch.org/whl/cu121
+
+# 5. 再用清华源安装其他依赖（避免覆盖已安装的 GPU 版 torch）
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    FlagEmbedding==1.3.2 \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 拷贝代码
+COPY main.py .
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["python", "main.py"]
+```
+
 🐦‍🔥3.docker-compose.yml 编排文件（指定 GPU 卡号）
 ```bash
 services:
