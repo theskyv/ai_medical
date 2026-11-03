@@ -155,6 +155,19 @@ jupyter server password    # 强制设置新密码
 - --no-browser：启动后不自动打开浏览器（适合在服务器 / 远程环境运行，手动在浏览器打开）
 - --allow-root：允许 root 用户 启动服务（Linux / 服务器环境下，root 权限运行时需要加这个参数，否则会报错）
 
+```bash
+nohup jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root > jupyter.log 2>&1 &
+```
+```bash
+cat jupyter.log
+
+# 查看是否在运行
+ps aux | grep jupyter-lab
+
+# 杀掉（PID换成查到的数字）
+kill -9 进程号
+```
+
 🦞测试服务器之间是否连通
 - 先 ping 10.189.1.127 → 确认主机在线；
 - 再用 telnet/nc 测试 18008 端口 → 确认服务可用。
