@@ -208,6 +208,9 @@ df -h
 
 # 全局查找文件名（全盘搜索）
 find / -name "你要找的文件名"
+
+# 看文件代码有多少行
+wc -l test.py
 ```
 
 ## 9.windows docker desktop换成国内镜像源并安装neo4j
